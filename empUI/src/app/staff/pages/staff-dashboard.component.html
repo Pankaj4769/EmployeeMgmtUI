@@ -1,0 +1,706 @@
+<div class="staff-dashboard-modern">
+
+  <!-- ================= TAB NAVIGATION ================= -->
+  <div class="dashboard-header">
+    <div class="header-actions">
+      <button 
+        class="tab-btn"
+        [class.active]="activeTab === 'directory'"
+        (click)="setActiveTab('directory')">
+        Staff Directory
+      </button>
+      
+      <button 
+        class="tab-btn"
+        [class.active]="activeTab === 'roster'"
+        (click)="setActiveTab('roster')">
+        Duty Roster
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= KPI CARDS (Enhanced) ================= -->
+  <div class="kpi-row-modern">
+    
+    <div class="kpi-card-modern">
+      <div class="kpi-icon-modern">👥</div>
+      <div class="kpi-content-modern">
+        <span class="kpi-label-modern">Total Staff</span>
+        <strong class="kpi-value-modern">{{ kpi.totalStaff }}</strong>
+      </div>
+    </div>
+
+    <div class="kpi-card-modern on-duty">
+      <div class="kpi-icon-modern">✅</div>
+      <div class="kpi-content-modern">
+        <span class="kpi-label-modern">On Duty</span>
+        <strong class="kpi-value-modern">{{ kpi.onDuty }}</strong>
+      </div>
+    </div>
+
+    <div class="kpi-card-modern efficiency">
+      <div class="kpi-icon-modern">⚡</div>
+      <div class="kpi-content-modern">
+        <span class="kpi-label-modern">Efficiency</span>
+        <strong class="kpi-value-modern">{{ kpi.avgEfficiency }}%</strong>
+      </div>
+    </div>
+
+    <div class="kpi-card-modern awards">
+      <div class="kpi-icon-modern">🏅</div>
+      <div class="kpi-content-modern">
+        <span class="kpi-label-modern">Awards</span>
+        <strong class="kpi-value-modern">{{ kpi.awards }}</strong>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= STAFF DIRECTORY TAB ================= -->
+  <div class="tab-content" *ngIf="activeTab === 'directory'">
+    
+    <!-- Controls Bar -->
+    <div class="controls-bar-modern">
+      
+      <!-- Search -->
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="text" 
+          placeholder="Search staff members..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearchChange()"
+        />
+      </div>
+
+      <!-- Filter -->
+      <div class="filter-group">
+        <button 
+          class="filter-btn"
+          [class.active]="filterStatus === 'ALL'"
+          (click)="setFilter('ALL')">
+          All
+        </button>
+        <button 
+          class="filter-btn"
+          [class.active]="filterStatus === 'BUSY'"
+          (click)="setFilter('BUSY')">
+          Busy
+        </button>
+        <button 
+          class="filter-btn"
+          [class.active]="filterStatus === 'NORMAL'"
+          (click)="setFilter('NORMAL')">
+          Normal
+        </button>
+        <button 
+          class="filter-btn"
+          [class.active]="filterStatus === 'IDLE'"
+          (click)="setFilter('IDLE')">
+          Idle
+        </button>
+      </div>
+
+      <!-- View Toggle -->
+      <div class="view-toggle">
+        <button 
+          class="view-btn"
+          [class.active]="viewMode === 'list'"
+          (click)="toggleViewMode('list')">
+          📋 List
+        </button>
+        <button 
+          class="view-btn"
+          [class.active]="viewMode === 'grid'"
+          (click)="toggleViewMode('grid')">
+          🎛️ Grid
+        </button>
+      </div>
+
+      <!-- Add Staff Button -->
+      <button class="add-staff-btn" (click)="openAddStaffModal()">
+        ➕ Add Staff
+      </button>
+
+    </div>
+
+    <!-- ================= LIST VIEW ================= -->
+    <div class="staff-table-container" *ngIf="viewMode === 'list'">
+      
+      <table class="staff-table">
+        <thead>
+          <tr>
+            <th>STAFF MEMBER</th>
+            <th>ROLE</th>
+            <th>STATUS</th>
+            <th (click)="setSorting('lastActive')" class="sortable">LAST ACTIVE</th>
+            <th (click)="setSorting('performance')" class="sortable">PERFORMANCE</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr 
+            *ngFor="let staff of staffCards; trackBy: trackByStaffId"
+            class="staff-row"
+            (click)="viewStaffDetails(staff)">
+            
+            <!-- Staff Member -->
+            <td class="staff-member-cell">
+              <div class="staff-avatar">
+                {{ staff.name.charAt(0) }}
+              </div>
+              <div class="staff-info">
+                <strong>{{ staff.name }}</strong>
+                <span class="staff-id">{{ staff.id }}</span>
+              </div>
+            </td>
+
+            <!-- Role -->
+            <td>{{ staff.role }}</td>
+
+            <!-- Status -->
+            <td>
+              <span 
+                class="status-badge-modern"
+                [class.on-duty]="staff.onDutyStatus === 'ON DUTY'"
+                [class.off-duty]="staff.onDutyStatus === 'OFF DUTY'">
+                {{ staff.onDutyStatus }}
+              </span>
+            </td>
+
+            <!-- Last Active -->
+            <td>
+              <span class="last-active">
+                ⏰ {{ formatTime(staff.lastActive) }}
+              </span>
+            </td>
+
+            <!-- Performance -->
+            <td>
+              <div class="performance-cell">
+                <span class="stars">
+                  <ng-container *ngFor="let star of getPerformanceStars(staff.performance)">
+                    {{ star }}
+                  </ng-container>
+                </span>
+                <span class="rating-value">{{ staff.performance }}</span>
+              </div>
+            </td>
+
+            <!-- Actions -->
+            <td>
+              <button 
+                class="action-btn-icon"
+                (click)="viewStaffDetails(staff); $event.stopPropagation()"
+                title="View Details">
+                👁️
+              </button>
+              <button 
+                class="action-btn-icon"
+                (click)="openEditStaffModal(staff); $event.stopPropagation()"
+                title="Edit Staff">
+                ✏️
+              </button>
+              <button 
+                class="action-btn-icon delete-btn"
+                (click)="deleteStaffMember(staff.id); $event.stopPropagation()"
+                title="Remove Staff">
+                🗑️
+              </button>
+            </td>
+
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="staffCards.length === 0">
+        <span class="empty-icon">👥</span>
+        <p>No staff members found</p>
+        <button class="btn-empty-state" (click)="openAddStaffModal()">
+          ➕ Add Your First Staff Member
+        </button>
+      </div>
+
+    </div>
+
+    <!-- ================= GRID VIEW ================= -->
+    <div class="staff-grid-compact" *ngIf="viewMode === 'grid'">
+
+      <div class="staff-card-compact"
+           *ngFor="let staff of staffCards; trackBy: trackByStaffId"
+           [class.status-busy]="staff.status === 'BUSY'"
+           [class.status-idle]="staff.status === 'IDLE'"
+           [class.heat-high]="staff.heatLevel === 'HIGH'"
+           [class.heat-medium]="staff.heatLevel === 'MEDIUM'">
+
+        <!-- Card Header -->
+        <div class="card-header">
+          <div class="header-left">
+            <span class="rank-badge" [class.top3]="staff.rank <= 3">#{{ staff.rank }}</span>
+            <span class="staff-name">{{ staff.name }}</span>
+          </div>
+          <div class="header-right">
+            <span class="status-chip" [class]="'status-' + staff.status.toLowerCase()">
+              {{ staff.status }}
+            </span>
+            <span class="heat-chip" [class]="'heat-' + (staff.heatLevel || 'LOW').toLowerCase()">
+              {{ staff.heatLevel }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Score Bar -->
+        <div class="score-compact">
+          <div class="score-bar-mini">
+            <div class="score-fill-mini" 
+                 [style.width.%]="staff.score || 0"
+                 [style.background]="getScoreColor(staff.score || 0)">
+            </div>
+          </div>
+          <span class="score-text">Score: {{ staff.score }}%</span>
+        </div>
+
+        <!-- Metrics Row -->
+        <div class="metrics-compact">
+          <div class="metric-mini">
+            <span class="metric-label-mini">Load</span>
+            <div class="metric-bar-mini">
+              <div class="metric-fill-mini load" [style.width.%]="staff.load"></div>
+            </div>
+            <span class="metric-value-mini">{{ staff.load }}%</span>
+          </div>
+
+          <div class="metric-mini">
+            <span class="metric-label-mini">Efficiency</span>
+            <div class="metric-bar-mini">
+              <div class="metric-fill-mini efficiency" [style.width.%]="staff.efficiency"></div>
+            </div>
+            <span class="metric-value-mini">{{ staff.efficiency }}%</span>
+          </div>
+        </div>
+
+        <!-- Intelligence Compact Grid -->
+        <div class="intel-compact">
+          <div class="intel-mini">
+            <span>Workload</span>
+            <strong>{{ staff.workloadIndex }}%</strong>
+          </div>
+          <div class="intel-mini">
+            <span>Productivity</span>
+            <strong>{{ staff.productivityIndex }}%</strong>
+          </div>
+          <div class="intel-mini">
+            <span>Consistency</span>
+            <strong>{{ staff.consistencyScore }}%</strong>
+          </div>
+          <div class="intel-mini" [class.high-fatigue]="(staff.fatigueScore || 0) > 70">
+            <span>Fatigue</span>
+            <strong>{{ staff.fatigueScore }}%</strong>
+          </div>
+        </div>
+
+        <!-- Stats Compact Row -->
+        <div class="stats-compact">
+          <div class="stat-mini">
+            <span class="stat-icon-mini">🍽️</span>
+            <div>
+              <span class="stat-label-mini">Active Tables</span>
+              <strong class="stat-value-mini">{{ staff.activeTables }}</strong>
+            </div>
+          </div>
+
+          <div class="stat-mini revenue">
+            <span class="stat-icon-mini">💰</span>
+            <div>
+              <span class="stat-label-mini">Revenue</span>
+              <strong class="stat-value-mini">₹{{ staff.revenue | number:'1.0-0' }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Info -->
+        <div class="footer-compact">
+          <span class="footer-item">📦 {{ staff.completedOrders }} orders</span>
+          <span class="footer-item">⏱️ {{ staff.avgServiceTime }}m</span>
+          <span class="footer-item" 
+                [class.trend-up]="staff.trend === 'UP'"
+                [class.trend-down]="staff.trend === 'DOWN'">
+            📈 {{ staff.trend }}
+          </span>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="actions-compact">
+          <button class="action-btn-mini primary" (click)="viewStaffDetails(staff)">
+            👁️ View
+          </button>
+          <button class="action-btn-mini secondary" (click)="openEditStaffModal(staff)">
+            ✏️ Edit
+          </button>
+        </div>
+
+        <!-- Alert Indicator -->
+        <div class="alert-indicator critical" *ngIf="staff.alertLevel === 'CRITICAL'">
+          🚨
+        </div>
+        <div class="alert-indicator warning" *ngIf="staff.alertLevel === 'WARNING'">
+          ⚠️
+        </div>
+
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-compact" *ngIf="staffCards.length === 0">
+        <span class="empty-icon">👥</span>
+        <p>No staff members found</p>
+        <button class="btn-empty-state" (click)="openAddStaffModal()">
+          ➕ Add Your First Staff Member
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ================= DUTY ROSTER TAB ================= -->
+  <div class="tab-content" *ngIf="activeTab === 'roster'">
+    
+    <div class="roster-header">
+      <h2>Weekly Roster</h2>
+      <button class="auto-generate-btn" (click)="autoGenerateRoster()">
+        🤖 Auto-Generate Roster (AI)
+      </button>
+    </div>
+
+    <div class="roster-placeholder">
+      <div class="roster-icon">🗓️</div>
+      <h3>Duty Roster Coming Soon</h3>
+      <p>Weekly schedule management will be available here</p>
+      <p class="roster-hint">You'll be able to assign shifts, manage schedules, and track attendance</p>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ================= STAFF DETAILS MODAL ================= -->
+<div class="modal-overlay" *ngIf="showStaffModal && isStaffSelected" (click)="closeStaffModal()">
+  
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    
+    <div class="modal-header">
+      <div class="modal-title">
+        <div class="staff-avatar-large">
+          {{ selectedStaff!.name.charAt(0) }}
+        </div>
+        <div>
+          <h2>{{ selectedStaff!.name }}</h2>
+          <p>{{ selectedStaff!.role }} • {{ selectedStaff!.id }}</p>
+        </div>
+      </div>
+      <button class="modal-close" (click)="closeStaffModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      
+      <!-- Contact Information -->
+      <section class="modal-section">
+        <h3>Contact Information</h3>
+        <div class="contact-grid">
+          <div class="contact-item">
+            <span class="contact-icon">📧</span>
+            <div>
+              <span class="contact-label">Email</span>
+              <span class="contact-value">{{ selectedStaff!.email || 'Not provided' }}</span>
+            </div>
+          </div>
+          <div class="contact-item">
+            <span class="contact-icon">📱</span>
+            <div>
+              <span class="contact-label">Phone</span>
+              <span class="contact-value">{{ selectedStaff!.phone || 'Not provided' }}</span>
+            </div>
+          </div>
+          <div class="contact-item">
+            <span class="contact-icon">📅</span>
+            <div>
+              <span class="contact-label">Join Date</span>
+              <span class="contact-value">{{ selectedStaff!.joinDate | date:'MMM dd, yyyy' }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Current Status Section -->
+      <section class="modal-section">
+        <h3>Current Status</h3>
+        <div class="status-grid">
+          <div class="status-item">
+            <span class="status-label">Status</span>
+            <span 
+              class="status-badge-large"
+              [class]="'status-' + selectedStaff!.status.toLowerCase()">
+              {{ selectedStaff!.status }}
+            </span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">On Duty</span>
+            <span class="status-value">{{ selectedStaff!.onDutyStatus }}</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Active Tables</span>
+            <span class="status-value">{{ selectedStaff!.activeTables }}</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Revenue Today</span>
+            <span class="status-value">₹{{ selectedStaff!.revenue | number:'1.0-0' }}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Performance Metrics -->
+      <section class="modal-section">
+        <h3>Performance Metrics</h3>
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <span class="metric-label">Overall Score</span>
+            <div class="metric-progress">
+              <div 
+                class="metric-progress-fill"
+                [style.width.%]="selectedStaff!.score"
+                [style.background]="getScoreColor(selectedStaff!.score || 0)">
+              </div>
+            </div>
+            <span class="metric-value">{{ selectedStaff!.score }}%</span>
+          </div>
+
+          <div class="metric-card">
+            <span class="metric-label">Efficiency</span>
+            <div class="metric-progress">
+              <div class="metric-progress-fill" [style.width.%]="selectedStaff!.efficiency"></div>
+            </div>
+            <span class="metric-value">{{ selectedStaff!.efficiency }}%</span>
+          </div>
+
+          <div class="metric-card">
+            <span class="metric-label">Workload</span>
+            <div class="metric-progress">
+              <div class="metric-progress-fill" [style.width.%]="selectedStaff!.workloadIndex"></div>
+            </div>
+            <span class="metric-value">{{ selectedStaff!.workloadIndex }}%</span>
+          </div>
+
+          <div class="metric-card">
+            <span class="metric-label">Productivity</span>
+            <div class="metric-progress">
+              <div class="metric-progress-fill" [style.width.%]="selectedStaff!.productivityIndex"></div>
+            </div>
+            <span class="metric-value">{{ selectedStaff!.productivityIndex }}%</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Intelligence Insights -->
+      <section class="modal-section">
+        <h3>Intelligence Insights</h3>
+        <div class="insights-grid">
+          <div class="insight-item">
+            <span class="insight-icon">🔥</span>
+            <div>
+              <span class="insight-label">Heat Level</span>
+              <span class="insight-value">{{ selectedStaff!.heatLevel }}</span>
+            </div>
+          </div>
+          <div class="insight-item">
+            <span class="insight-icon">📈</span>
+            <div>
+              <span class="insight-label">Trend</span>
+              <span class="insight-value">{{ selectedStaff!.trend }}</span>
+            </div>
+          </div>
+          <div class="insight-item">
+            <span class="insight-icon">😰</span>
+            <div>
+              <span class="insight-label">Fatigue</span>
+              <span class="insight-value">{{ selectedStaff!.fatigueScore }}%</span>
+            </div>
+          </div>
+          <div class="insight-item" *ngIf="selectedStaff!.alertLevel !== 'NONE'">
+            <span class="insight-icon">⚠️</span>
+            <div>
+              <span class="insight-label">Alert</span>
+              <span class="insight-value alert">{{ selectedStaff!.alertLevel }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Shift History -->
+      <section class="modal-section">
+        <h3>Recent Shifts</h3>
+        <div class="shift-history">
+          <div class="shift-record" *ngFor="let shift of selectedStaff!.shiftHistory?.slice(0, 5)">
+            <div class="shift-date">
+              {{ shift.date | date:'MMM dd, yyyy' }}
+            </div>
+            <div class="shift-time">
+              {{ shift.startTime }} - {{ shift.endTime }} ({{ shift.hoursWorked }}h)
+            </div>
+            <div class="shift-performance">
+              <span *ngFor="let star of getPerformanceStars(shift.performance)">{{ star }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Awards -->
+      <section class="modal-section" *ngIf="selectedStaff!.awards && selectedStaff!.awards.length > 0">
+        <h3>Awards & Recognition</h3>
+        <div class="awards-list">
+          <div class="award-item" *ngFor="let award of selectedStaff!.awards">
+            <span class="award-icon">{{ award.icon }}</span>
+            <div>
+              <strong>{{ award.title }}</strong>
+              <span class="award-date">{{ award.date | date:'MMM yyyy' }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="modal-btn secondary" (click)="closeStaffModal()">Close</button>
+      <button class="modal-btn primary" (click)="openEditStaffModal(selectedStaff!)">✏️ Edit Staff</button>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ================= ADD/EDIT STAFF MODAL ================= -->
+<div class="modal-overlay" *ngIf="showAddStaffModal" (click)="closeAddStaffModal()">
+  
+  <div class="modal-content modal-medium" (click)="$event.stopPropagation()">
+    
+    <div class="modal-header">
+      <div class="modal-title">
+        <div class="modal-icon">
+          {{ isEditingStaff ? '✏️' : '➕' }}
+        </div>
+        <div>
+          <h2>{{ getAddStaffModalTitle() }}</h2>
+          <p>{{ isEditingStaff ? 'Update staff member information' : 'Add a new member to your team' }}</p>
+        </div>
+      </div>
+      <button class="modal-close" (click)="closeAddStaffModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      
+      <form (submit)="saveStaff(); $event.preventDefault()">
+        
+        <!-- Full Name -->
+        <div class="form-group">
+          <label class="form-label" for="staffName">
+            Full Name <span class="required">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="staffName" 
+            class="form-input" 
+            [(ngModel)]="newStaff.name"
+            name="staffName"
+            placeholder="Enter staff member's full name" 
+            required
+            autocomplete="name"
+          />
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label class="form-label" for="staffEmail">
+            Email Address <span class="required">*</span>
+          </label>
+          <input 
+            type="email" 
+            id="staffEmail" 
+            class="form-input" 
+            [(ngModel)]="newStaff.email"
+            name="staffEmail"
+            placeholder="email@example.com" 
+            required
+            autocomplete="email"
+          />
+        </div>
+
+        <!-- Phone -->
+        <div class="form-group">
+          <label class="form-label" for="staffPhone">
+            Phone Number
+          </label>
+          <input 
+            type="tel" 
+            id="staffPhone" 
+            class="form-input" 
+            [(ngModel)]="newStaff.phone"
+            name="staffPhone"
+            placeholder="+91 98765 43210"
+            autocomplete="tel"
+          />
+        </div>
+
+        <!-- Role Selection -->
+        <div class="form-group">
+          <label class="form-label" for="staffRole">
+            Role <span class="required">*</span>
+          </label>
+          <select 
+            id="staffRole" 
+            class="form-input" 
+            [(ngModel)]="newStaff.roleId"
+            name="staffRole"
+            required>
+            <option [value]="0" disabled>Select a role...</option>
+            <option *ngFor="let role of roles" [value]="role.id">
+              {{ role.name }}
+            </option>
+          </select>
+          <span class="form-hint" *ngIf="newStaff.roleId > 0">
+            {{ getSelectedRoleDescription() }}
+          </span>
+        </div>
+
+        <!-- Status (Only for editing) -->
+        <div class="form-group" *ngIf="isEditingStaff">
+          <label class="form-label" for="staffStatus">
+            Status
+          </label>
+          <select 
+            id="staffStatus" 
+            class="form-input" 
+            [(ngModel)]="newStaff.status"
+            name="staffStatus">
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+          </select>
+        </div>
+
+        <!-- Actions -->
+        <div class="modal-footer">
+          <button type="button" class="modal-btn secondary" (click)="closeAddStaffModal()">
+            Cancel
+          </button>
+          <button type="submit" class="modal-btn primary">
+            {{ isEditingStaff ? '💾 Update Staff' : '➕ Add Staff' }}
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+</div>
