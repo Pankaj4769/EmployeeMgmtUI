@@ -573,7 +573,7 @@
       <div class="at-modal-footer">
         <button class="at-modal-btn at-modal-btn--secondary" (click)="closeDetailModal()">Close</button>
         <button class="at-modal-btn at-modal-btn--clock"
-          *ngIf="selectedRecord?.clockIn && !selectedRecord?.clockOut"
+          *ngIf="selectedRecord.clockIn && !selectedRecord.clockOut"
           (click)="handleClockOut(selectedRecord!.staffId); closeDetailModal()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"/>

@@ -1034,7 +1034,7 @@
 
     <div class="lm-modal-footer">
       <button class="lm-modal-btn lm-modal-btn--secondary" (click)="showDetailModal = false">Close</button>
-      <ng-container *ngIf="viewMode === 'manager' && selectedRequest?.status === 'PENDING'">
+      <ng-container *ngIf="viewMode === 'manager' && selectedRequest.status === 'PENDING'">
         <button class="lm-modal-btn lm-modal-btn--danger" (click)="openRejectModal(selectedRequest!.id); showDetailModal = false">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>

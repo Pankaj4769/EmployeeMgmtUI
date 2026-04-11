@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { BehaviorSubject } from 'rxjs';
 import {
   ShiftTemplateView,
@@ -18,6 +19,8 @@ const DEFAULT_TEMPLATES: ShiftTemplateView[] = [
 @Injectable({ providedIn: 'root' })
 export class ShiftService {
 
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
   private templatesSubject = new BehaviorSubject<ShiftTemplateView[]>(this.loadTemplates());
   private assignmentsSubject = new BehaviorSubject<ShiftAssignmentView[]>(this.loadAssignments());
 
@@ -29,13 +32,13 @@ export class ShiftService {
 
   addAssignments(newOnes: ShiftAssignmentView[]): void {
     const updated = [...this.assignmentsSubject.value, ...newOnes];
-    localStorage.setItem(ASSIGNMENTS_KEY, JSON.stringify(updated));
+    if (this.isBrowser) localStorage.setItem(ASSIGNMENTS_KEY, JSON.stringify(updated));
     this.assignmentsSubject.next(updated);
   }
 
   deleteAssignment(id: string): void {
     const updated = this.assignmentsSubject.value.filter(a => a.id !== id);
-    localStorage.setItem(ASSIGNMENTS_KEY, JSON.stringify(updated));
+    if (this.isBrowser) localStorage.setItem(ASSIGNMENTS_KEY, JSON.stringify(updated));
     this.assignmentsSubject.next(updated);
   }
 
@@ -59,6 +62,7 @@ export class ShiftService {
   }
 
   private loadTemplates(): ShiftTemplateView[] {
+    if (!this.isBrowser) return DEFAULT_TEMPLATES;
     try {
       const stored = localStorage.getItem(TEMPLATES_KEY);
       return stored ? JSON.parse(stored) : DEFAULT_TEMPLATES;
@@ -68,6 +72,7 @@ export class ShiftService {
   }
 
   private loadAssignments(): ShiftAssignmentView[] {
+    if (!this.isBrowser) return [];
     try {
       const stored = localStorage.getItem(ASSIGNMENTS_KEY);
       if (!stored) return [];
