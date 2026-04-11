@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, combineLatest, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
-import { BASE_URL, EMPLOYEE_MGMT_URL } from '../../apiUrls';
+import { EMPLOYEE_MGMT_URL } from '../../apiUrls';
 
 export interface StaffMember {
   id: string;         // KOS staffId — primary key
@@ -58,7 +58,7 @@ interface EmployeeDTO {
 })
 export class StaffService {
   private readonly EM_API = `${EMPLOYEE_MGMT_URL}/api/employees`;
-  private readonly KOS_STAFF_API = `${BASE_URL}/auth/staff`;
+  private readonly KOS_STAFF_API = `${EMPLOYEE_MGMT_URL}/auth/staff`;
 
   private staffSubject = new BehaviorSubject<StaffMember[]>([]);
   public staff$ = this.staffSubject.asObservable();
@@ -181,11 +181,11 @@ export class StaffService {
     name: string; email: string; mobile: string;
     role: string; restaurantId: string;
   }): Observable<{ staffId: number }> {
-    return this.http.post<{ staffId: number }>(`${BASE_URL}/auth/addStaff`, payload);
+    return this.http.post<{ staffId: number }>(`${EMPLOYEE_MGMT_URL}/auth/addStaff`, payload);
   }
 
   resendTempPassword(username: string): Observable<{ message: string; status: boolean }> {
-    return this.http.post<{ message: string; status: boolean }>(`${BASE_URL}/auth/resendTempPassword`, { username });
+    return this.http.post<{ message: string; status: boolean }>(`${EMPLOYEE_MGMT_URL}/auth/resendTempPassword`, { username });
   }
 
   // ─── Mappers ───────────────────────────────────────────────────────────────

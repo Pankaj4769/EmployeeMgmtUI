@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { EMPLOYEE_MGMT_URL } from '../../apiUrls';
 
 export interface Role {
   id: number;
@@ -14,7 +15,7 @@ export interface Role {
   providedIn: 'root'
 })
 export class RoleService {
-  private API_BASE_URL = 'http://localhost:8080/api';
+  private API_BASE_URL = `${EMPLOYEE_MGMT_URL}/api`;
   private rolesSubject = new BehaviorSubject<Role[]>([]);
   public roles$ = this.rolesSubject.asObservable();
 

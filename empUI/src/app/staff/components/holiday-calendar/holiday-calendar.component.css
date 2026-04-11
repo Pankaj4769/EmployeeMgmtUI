@@ -1,10 +1,11 @@
 :host {
+  display: block;
   --primary: #16a34a; --primary-dark: #15803d;
   --bg: #f1f5f9; --card: #ffffff; --border: #e2e8f0;
   --text: #0f172a; --text-secondary: #64748b;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
-.hc-page { padding: 24px; background: var(--bg); min-height: 100vh; }
+.hc-page { padding: 24px; background: var(--bg); min-height: 100%; }
 
 .hc-header {
   display: flex; justify-content: space-between; align-items: center;
