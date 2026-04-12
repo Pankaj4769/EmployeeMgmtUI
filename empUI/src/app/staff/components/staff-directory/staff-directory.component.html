@@ -1,0 +1,714 @@
+<div class="sd-page">
+
+  <!-- ================= PAGE HEADER ================= -->
+  <div class="sd-header">
+    <div class="sd-header-title">
+      <h1>Staff &amp; Operations</h1>
+      <p>Manage your team, shifts, and payroll</p>
+    </div>
+    <nav class="sd-tabs">
+      <button class="sd-tab" [class.sd-tab--active]="activeTab === 'directory'" (click)="setActiveTab('directory')">Directory</button>
+      <button class="sd-tab" [class.sd-tab--active]="activeTab === 'shift'" (click)="setActiveTab('shift')">Shifts</button>
+      <button class="sd-tab" [class.sd-tab--active]="activeTab === 'payroll'" (click)="setActiveTab('payroll')">Payroll</button>
+    </nav>
+  </div>
+
+  <!-- ================= KPI STRIP (directory tab only) ================= -->
+  <div class="sd-kpi-strip" *ngIf="activeTab === 'directory'">
+
+    <div class="sd-kpi-card">
+      <div class="sd-kpi-icon sd-kpi-icon--blue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <div class="sd-kpi-body">
+        <span class="sd-kpi-label">Total Staff</span>
+        <strong class="sd-kpi-value">{{ kpi.totalStaff }}</strong>
+      </div>
+    </div>
+
+    <div class="sd-kpi-card">
+      <div class="sd-kpi-icon sd-kpi-icon--green">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+      <div class="sd-kpi-body">
+        <span class="sd-kpi-label">On Duty</span>
+        <strong class="sd-kpi-value">{{ kpi.onDuty }}</strong>
+      </div>
+    </div>
+
+    <div class="sd-kpi-card">
+      <div class="sd-kpi-icon sd-kpi-icon--amber">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+      </div>
+      <div class="sd-kpi-body">
+        <span class="sd-kpi-label">Avg Efficiency</span>
+        <strong class="sd-kpi-value">{{ kpi.avgEfficiency }}%</strong>
+      </div>
+    </div>
+
+    <div class="sd-kpi-card">
+      <div class="sd-kpi-icon sd-kpi-icon--red">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <div class="sd-kpi-body">
+        <span class="sd-kpi-label">Busy</span>
+        <strong class="sd-kpi-value">{{ kpi.busyStaff }}</strong>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= DIRECTORY PANEL ================= -->
+  <div class="sd-panel" *ngIf="activeTab === 'directory'">
+
+    <!-- Resend toast -->
+    <div class="sd-toast" *ngIf="resendMsg">{{ resendMsg }}</div>
+
+    <!-- Toolbar -->
+    <div class="sd-toolbar">
+
+      <!-- Search -->
+      <div class="sd-search">
+        <svg class="sd-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input
+          type="text"
+          class="sd-search-input"
+          placeholder="Search staff members..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearchChange()"
+        />
+      </div>
+
+      <!-- Status filter -->
+      <div class="sd-filter-group">
+        <button class="sd-filter-btn" [class.sd-filter-btn--active]="filterStatus === 'ALL'" (click)="setFilter('ALL')">All</button>
+        <button class="sd-filter-btn" [class.sd-filter-btn--active]="filterStatus === 'BUSY'" (click)="setFilter('BUSY')">Busy</button>
+        <button class="sd-filter-btn" [class.sd-filter-btn--active]="filterStatus === 'NORMAL'" (click)="setFilter('NORMAL')">Normal</button>
+        <button class="sd-filter-btn" [class.sd-filter-btn--active]="filterStatus === 'IDLE'" (click)="setFilter('IDLE')">Idle</button>
+      </div>
+
+      <!-- View toggle -->
+      <div class="sd-view-toggle">
+        <button class="sd-view-btn" [class.sd-view-btn--active]="viewMode === 'list'" (click)="toggleViewMode('list')" title="List view">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+            <circle cx="3" cy="6" r=".5" fill="currentColor"/><circle cx="3" cy="12" r=".5" fill="currentColor"/><circle cx="3" cy="18" r=".5" fill="currentColor"/>
+          </svg>
+          List
+        </button>
+        <button class="sd-view-btn" [class.sd-view-btn--active]="viewMode === 'grid'" (click)="toggleViewMode('grid')" title="Grid view">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+          </svg>
+          Grid
+        </button>
+      </div>
+
+      <!-- Add Staff -->
+      <button class="sd-add-btn" (click)="openAddStaffModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Add Staff
+      </button>
+
+    </div>
+
+    <!-- ===== LIST VIEW ===== -->
+    <div class="sd-table-wrap" *ngIf="viewMode === 'list'">
+      <table class="sd-table">
+        <thead>
+          <tr>
+            <th>Staff Member</th>
+            <th>Role</th>
+            <th>Department</th>
+            <th>Status</th>
+            <th>Duty</th>
+            <th (click)="setSorting('performance')" class="sd-th--sortable">Score</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let staff of staffCards; trackBy: trackByStaffId"
+            class="sd-tr"
+            (click)="viewStaffDetails(staff)">
+
+            <!-- Staff Member -->
+            <td class="sd-td-member">
+              <div class="sd-avatar" [style.background]="getAvatarColor(staff.name)">
+                {{ staff.name.charAt(0).toUpperCase() }}
+              </div>
+              <div class="sd-member-info">
+                <strong>{{ staff.name }}</strong>
+                <span>{{ staff.email || staff.phone || '—' }}</span>
+              </div>
+            </td>
+
+            <!-- Role -->
+            <td class="sd-td-role">{{ staff.role || '—' }}</td>
+
+            <!-- Department -->
+            <td class="sd-td-dept">{{ staff.departmentName || '—' }}</td>
+
+            <!-- Employment Status -->
+            <td>
+              <span class="emp-pill" [ngClass]="'emp-' + (staff.employmentStatus || 'active').toLowerCase()">
+                {{ staff.employmentStatus || 'ACTIVE' }}
+              </span>
+            </td>
+
+            <!-- Duty -->
+            <td>
+              <span class="duty-pill" [class.duty-on]="staff.onDutyStatus === 'ON DUTY'">
+                <span class="duty-dot"></span>
+                {{ staff.onDutyStatus }}
+              </span>
+            </td>
+
+            <!-- Score -->
+            <td class="sd-td-score">
+              <div class="score-bar-wrap">
+                <div class="score-bar-track">
+                  <div class="score-bar-fill"
+                       [style.width.%]="staff.score || 0"
+                       [style.background]="getScoreColor(staff.score || 0)">
+                  </div>
+                </div>
+                <span class="score-pct">{{ staff.score || 0 }}%</span>
+              </div>
+            </td>
+
+            <!-- Actions -->
+            <td class="sd-td-actions" (click)="$event.stopPropagation()">
+              <button class="sd-icon-btn sd-icon-btn--view" (click)="viewStaffDetails(staff); $event.stopPropagation()" title="View details">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+              <button class="sd-icon-btn sd-icon-btn--edit" (click)="openEditStaffModal(staff); $event.stopPropagation()" title="Edit staff">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                </svg>
+              </button>
+              <button class="sd-icon-btn sd-icon-btn--key" (click)="resendTempPassword(staff); $event.stopPropagation()" [disabled]="resendingId === staff.id" title="Resend temporary password">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+                </svg>
+              </button>
+              <button class="sd-icon-btn sd-icon-btn--del" (click)="deleteStaffMember(staff.id); $event.stopPropagation()" title="Remove staff">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                </svg>
+              </button>
+            </td>
+
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty state -->
+      <div class="sd-empty" *ngIf="staffCards.length === 0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        <p>No staff members found</p>
+        <button class="sd-empty-btn" (click)="openAddStaffModal()">Add Your First Staff Member</button>
+      </div>
+    </div>
+
+    <!-- ===== GRID VIEW ===== -->
+    <div class="sd-grid" *ngIf="viewMode === 'grid'">
+
+      <div class="sd-card"
+           *ngFor="let staff of staffCards; trackBy: trackByStaffId"
+           (click)="viewStaffDetails(staff)">
+
+        <!-- Card top row -->
+        <div class="sd-card-top">
+          <div class="sd-card-identity">
+            <div class="sd-avatar sd-avatar--lg" [style.background]="getAvatarColor(staff.name)">
+              {{ staff.name.charAt(0).toUpperCase() }}
+            </div>
+            <div class="sd-card-name-wrap">
+              <strong class="sd-card-name">{{ staff.name }}</strong>
+              <span class="sd-card-role">{{ staff.role || '—' }}</span>
+            </div>
+          </div>
+          <span class="emp-pill" [ngClass]="'emp-' + (staff.employmentStatus || 'active').toLowerCase()">
+            {{ staff.employmentStatus || 'ACTIVE' }}
+          </span>
+        </div>
+
+        <!-- Department + duty -->
+        <div class="sd-card-meta">
+          <span class="sd-card-dept">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            {{ staff.departmentName || 'No Department' }}
+          </span>
+          <span class="duty-pill" [class.duty-on]="staff.onDutyStatus === 'ON DUTY'">
+            <span class="duty-dot"></span>
+            {{ staff.onDutyStatus }}
+          </span>
+        </div>
+
+        <!-- Score bar -->
+        <div class="sd-card-score">
+          <div class="score-bar-track">
+            <div class="score-bar-fill"
+                 [style.width.%]="staff.score || 0"
+                 [style.background]="getScoreColor(staff.score || 0)">
+            </div>
+          </div>
+          <div class="sd-card-score-row">
+            <span class="sd-card-score-label">Score</span>
+            <span class="score-pct">{{ staff.score || 0 }}%</span>
+          </div>
+        </div>
+
+        <!-- Stats row -->
+        <div class="sd-card-stats">
+          <div class="sd-card-stat">
+            <span class="sd-card-stat-label">Tables</span>
+            <strong>{{ staff.activeTables }}</strong>
+          </div>
+          <div class="sd-card-stat">
+            <span class="sd-card-stat-label">Revenue</span>
+            <strong>₹{{ staff.revenue | number:'1.0-0' }}</strong>
+          </div>
+          <div class="sd-card-stat">
+            <span class="sd-card-stat-label">Efficiency</span>
+            <strong>{{ staff.efficiency }}%</strong>
+          </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="sd-card-actions" (click)="$event.stopPropagation()">
+          <button class="sd-card-btn sd-card-btn--view" (click)="viewStaffDetails(staff); $event.stopPropagation()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            View
+          </button>
+          <button class="sd-card-btn sd-card-btn--edit" (click)="openEditStaffModal(staff); $event.stopPropagation()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+            </svg>
+            Edit
+          </button>
+          <button class="sd-card-btn sd-card-btn--key" (click)="resendTempPassword(staff); $event.stopPropagation()" [disabled]="resendingId === staff.id">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+            </svg>
+            Resend
+          </button>
+          <button class="sd-card-btn sd-card-btn--del" (click)="deleteStaffMember(staff.id); $event.stopPropagation()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+            </svg>
+            Delete
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Empty state -->
+      <div class="sd-empty sd-empty--grid" *ngIf="staffCards.length === 0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        <p>No staff members found</p>
+        <button class="sd-empty-btn" (click)="openAddStaffModal()">Add Your First Staff Member</button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ================= SHIFT TAB ================= -->
+  <div class="sd-tab-content" *ngIf="activeTab === 'shift'">
+    <app-shift-management
+      [templates]="shiftTemplates" [assignments]="shiftAssignments"
+      [kpi]="shiftKpi" [selectedDate]="shiftSelectedDate" [availableStaff]="shiftAvailableStaff"
+      (dateChange)="onShiftDateChange($event)" (bulkAssign)="onBulkAssign($event)"
+      (deleteAssignment)="onDeleteAssignment($event)" (autoGenerateRoster)="autoGenerateRoster()">
+    </app-shift-management>
+  </div>
+
+  <!-- ================= PAYROLL TAB ================= -->
+  <div class="sd-tab-content" *ngIf="activeTab === 'payroll'">
+    <app-payroll
+      [salarySlips]="payrollSalarySlips" [salaryKpi]="payrollSalaryKpi"
+      [commissionRecords]="payrollCommissionRecords" [commissionKpi]="payrollCommissionKpi"
+      [selectedMonth]="payrollSelectedMonth" [selectedStaffId]="payrollSelectedStaffId"
+      [staffDirectory]="payrollStaffDirectory" [shiftRecords]="payrollShiftRecords"
+      [leaveRecords]="payrollLeaveRecords" [calculator]="payrollCalculator"
+      (generateSlip)="onGenerateSlip($event)" (payCommission)="onPayCommission($event)"
+      (selectedMonthChange)="onPayrollMonthChange($event)"
+      (selectedStaffChange)="payrollSelectedStaffId = $event">
+    </app-payroll>
+  </div>
+
+</div>
+
+<!-- ================= STAFF DETAIL MODAL ================= -->
+<div class="sd-overlay" *ngIf="showStaffModal && isStaffSelected" (click)="closeStaffModal()">
+  <div class="sd-modal" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="sd-modal-header">
+      <div class="sd-modal-identity">
+        <div class="sd-avatar sd-avatar--xl" [style.background]="getAvatarColor(selectedStaff!.name)">
+          {{ selectedStaff!.name.charAt(0).toUpperCase() }}
+        </div>
+        <div class="sd-modal-name-block">
+          <h2>{{ selectedStaff!.name }}</h2>
+          <p>{{ selectedStaff!.role }}</p>
+          <span class="emp-pill" [ngClass]="'emp-' + (selectedStaff!.employmentStatus || 'active').toLowerCase()">
+            {{ selectedStaff!.employmentStatus || 'ACTIVE' }}
+          </span>
+        </div>
+      </div>
+      <button class="sd-modal-close" (click)="closeStaffModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="sd-modal-body">
+
+      <!-- 1. Contact -->
+      <section class="sd-section">
+        <h3 class="sd-section-title">Contact</h3>
+        <div class="sd-detail-grid">
+          <div class="sd-detail-item">
+            <div class="sd-detail-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+            </div>
+            <div>
+              <span class="sd-detail-label">Email</span>
+              <span class="sd-detail-value">{{ selectedStaff!.email || '—' }}</span>
+            </div>
+          </div>
+          <div class="sd-detail-item">
+            <div class="sd-detail-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.18 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+            </div>
+            <div>
+              <span class="sd-detail-label">Phone</span>
+              <span class="sd-detail-value">{{ selectedStaff!.phone || '—' }}</span>
+            </div>
+          </div>
+          <div class="sd-detail-item">
+            <div class="sd-detail-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </div>
+            <div>
+              <span class="sd-detail-label">Join Date</span>
+              <span class="sd-detail-value">{{ selectedStaff!.joinDate | date:'MMM dd, yyyy' }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Employment -->
+      <section class="sd-section">
+        <h3 class="sd-section-title">Employment</h3>
+        <div class="sd-detail-grid">
+          <div class="sd-detail-item">
+            <div class="sd-detail-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+            </div>
+            <div>
+              <span class="sd-detail-label">Department</span>
+              <span class="sd-detail-value">{{ selectedStaff!.departmentName || '—' }}</span>
+            </div>
+          </div>
+          <div class="sd-detail-item">
+            <div class="sd-detail-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="1" x2="12" y2="23"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </div>
+            <div>
+              <span class="sd-detail-label">Salary</span>
+              <span class="sd-detail-value">{{ selectedStaff!.salary ? ('₹' + (selectedStaff!.salary | number:'1.0-0')) : '—' }}</span>
+            </div>
+          </div>
+          <div class="sd-detail-item">
+            <div class="sd-detail-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+            <div>
+              <span class="sd-detail-label">Duty Status</span>
+              <span class="sd-detail-value">{{ selectedStaff!.onDutyStatus }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Performance -->
+      <section class="sd-section">
+        <h3 class="sd-section-title">Performance</h3>
+        <div class="sd-perf-list">
+
+          <div class="sd-perf-row">
+            <span class="sd-perf-label">Overall Score</span>
+            <div class="sd-perf-bar-wrap">
+              <div class="sd-perf-track">
+                <div class="sd-perf-fill"
+                     [style.width.%]="selectedStaff!.score || 0"
+                     [style.background]="getScoreColor(selectedStaff!.score || 0)">
+                </div>
+              </div>
+              <span class="sd-perf-pct">{{ selectedStaff!.score || 0 }}%</span>
+            </div>
+          </div>
+
+          <div class="sd-perf-row">
+            <span class="sd-perf-label">Efficiency</span>
+            <div class="sd-perf-bar-wrap">
+              <div class="sd-perf-track">
+                <div class="sd-perf-fill" [style.width.%]="selectedStaff!.efficiency" style="background:#0891b2"></div>
+              </div>
+              <span class="sd-perf-pct">{{ selectedStaff!.efficiency }}%</span>
+            </div>
+          </div>
+
+          <div class="sd-perf-row">
+            <span class="sd-perf-label">Workload</span>
+            <div class="sd-perf-bar-wrap">
+              <div class="sd-perf-track">
+                <div class="sd-perf-fill" [style.width.%]="selectedStaff!.workloadIndex || 0" style="background:#d97706"></div>
+              </div>
+              <span class="sd-perf-pct">{{ selectedStaff!.workloadIndex || 0 }}%</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="sd-modal-footer">
+      <button class="sd-modal-btn sd-modal-btn--secondary" (click)="closeStaffModal()">Close</button>
+      <button class="sd-modal-btn sd-modal-btn--primary" (click)="openEditStaffModal(selectedStaff!)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+        </svg>
+        Edit Staff
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= ADD / EDIT STAFF MODAL ================= -->
+<div class="sd-overlay" *ngIf="showAddStaffModal" (click)="closeAddStaffModal()">
+  <div class="sd-modal sd-modal--medium" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="sd-modal-header">
+      <div class="sd-modal-identity">
+        <div class="sd-modal-form-icon" [class.sd-modal-form-icon--edit]="isEditingStaff">
+          <svg *ngIf="!isEditingStaff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          <svg *ngIf="isEditingStaff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+          </svg>
+        </div>
+        <div class="sd-modal-name-block">
+          <h2>{{ getAddStaffModalTitle() }}</h2>
+          <p>{{ isEditingStaff ? 'Update staff member information' : 'Add a new member to your team' }}</p>
+        </div>
+      </div>
+      <button class="sd-modal-close" (click)="closeAddStaffModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Step Indicator -->
+    <div class="step-indicator">
+      <div class="step-item" [class.active]="formStep === 1" [class.completed]="formStep > 1">
+        <span class="step-number">1</span>
+        <span class="step-label">Basic Info</span>
+      </div>
+      <div class="step-line" [class.completed]="formStep > 1"></div>
+      <div class="step-item" [class.active]="formStep === 2">
+        <span class="step-number">2</span>
+        <span class="step-label">Employment Details</span>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="sd-modal-body">
+      <form (submit)="saveStaff(); $event.preventDefault()">
+
+        <!-- STEP 1 -->
+        <div *ngIf="formStep === 1">
+
+          <div class="name-row">
+            <div class="form-group">
+              <label class="form-label" for="staffFirstName">First Name <span class="required">*</span></label>
+              <input type="text" id="staffFirstName" class="form-input"
+                     [(ngModel)]="newStaff.firstName" name="staffFirstName"
+                     placeholder="First name" autocomplete="given-name"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="staffLastName">Last Name</label>
+              <input type="text" id="staffLastName" class="form-input"
+                     [(ngModel)]="newStaff.lastName" name="staffLastName"
+                     placeholder="Last name" autocomplete="family-name"/>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="staffEmail">Email Address <span class="required">*</span></label>
+            <input type="email" id="staffEmail" class="form-input"
+                   [(ngModel)]="newStaff.email" name="staffEmail"
+                   placeholder="email@example.com" autocomplete="email"/>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="staffPhone">Phone Number</label>
+            <input type="tel" id="staffPhone" class="form-input"
+                   [(ngModel)]="newStaff.phone" name="staffPhone"
+                   placeholder="+91 98765 43210" autocomplete="tel"/>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="staffPosition">Role / Position <span class="required">*</span></label>
+            <select id="staffPosition" class="form-input" [(ngModel)]="newStaff.position" name="staffPosition">
+              <option value="">— Select a position —</option>
+              <option *ngFor="let pos of predefinedPositions" [value]="pos">{{ pos }}</option>
+            </select>
+          </div>
+
+          <div class="form-info-box" *ngIf="!isEditingStaff">
+            Mobile number will be used as the login username. A temporary password will be auto-generated and emailed to the staff member.
+          </div>
+
+          <div class="step1-error" *ngIf="step1Error">{{ step1Error }}</div>
+
+          <div class="sd-modal-footer">
+            <button type="button" class="sd-modal-btn sd-modal-btn--secondary" (click)="closeAddStaffModal()">Cancel</button>
+            <button type="button" class="sd-modal-btn sd-modal-btn--primary" [disabled]="isSaving" (click)="goToStep2()">
+              {{ isSaving ? 'Saving...' : 'Next' }}
+            </button>
+          </div>
+
+        </div>
+
+        <!-- STEP 2 -->
+        <div *ngIf="formStep === 2">
+
+          <div class="form-group">
+            <label class="form-label" for="staffDept">Department</label>
+            <select id="staffDept" class="form-input" [(ngModel)]="newStaff.departmentId" name="staffDept">
+              <option [value]="0">— No Department —</option>
+              <option *ngFor="let dept of availableDepartments" [value]="dept.id">{{ dept.name }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="staffSalary">Salary (₹)</label>
+            <input type="number" id="staffSalary" class="form-input"
+                   [(ngModel)]="newStaff.salary" name="staffSalary"
+                   placeholder="e.g. 35000" min="0"/>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="staffStatus">Status</label>
+            <select id="staffStatus" class="form-input" [(ngModel)]="newStaff.status" name="staffStatus">
+              <option value="ACTIVE">Active</option>
+              <option value="INACTIVE">Inactive</option>
+              <option value="ON_LEAVE">On Leave</option>
+              <option value="TERMINATED">Terminated</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="staffHireDate">Hire Date</label>
+            <input type="date" id="staffHireDate" class="form-input"
+                   [(ngModel)]="newStaff.hireDate" name="staffHireDate"/>
+          </div>
+
+          <div *ngIf="isEditingStaff" class="audit-fields">
+            <div class="form-group">
+              <label class="form-label">Created At</label>
+              <input type="text" class="form-input readonly" [value]="newStaff.createdAt || '—'" readonly/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Updated</label>
+              <input type="text" class="form-input readonly" [value]="newStaff.updatedAt || '—'" readonly/>
+            </div>
+          </div>
+
+          <div class="sd-modal-footer">
+            <button type="button" class="sd-modal-btn sd-modal-btn--secondary" (click)="goToStep1()">Back</button>
+            <button type="submit" class="sd-modal-btn sd-modal-btn--primary" [disabled]="isSaving">
+              {{ isSaving ? 'Saving...' : (isEditingStaff ? 'Update Staff' : 'Add Staff') }}
+            </button>
+          </div>
+
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,51 @@
+<div class="app-shell" [class.sidebar-collapsed]="sidebarCollapsed()">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="brand">
+        <span class="brand-icon material-symbols-outlined">groups</span>
+        <span class="brand-name">EmpMgmt</span>
+      </div>
+      <button class="collapse-btn" (click)="toggleSidebar()" title="Toggle sidebar">
+        <span class="material-symbols-outlined">{{ sidebarCollapsed() ? 'menu' : 'menu_open' }}</span>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      @for (group of navGroups; track group.group) {
+        <div class="nav-group">
+          <span class="nav-group-label">{{ group.group }}</span>
+          @for (item of group.items; track item.route) {
+            <a class="nav-item"
+               [routerLink]="item.route"
+               routerLinkActive="active"
+               [title]="sidebarCollapsed() ? item.label : ''">
+              <span class="nav-icon material-symbols-outlined">{{ item.icon }}</span>
+              <span class="nav-label">{{ item.label }}</span>
+            </a>
+          }
+        </div>
+      }
+    </nav>
+  </aside>
+
+  <!-- Main content -->
+  <div class="main-area">
+    <header class="topbar">
+      <button class="topbar-menu-btn" (click)="toggleSidebar()">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+      <div class="topbar-title">Employee Management</div>
+      <div class="topbar-actions">
+        <span class="material-symbols-outlined topbar-icon" title="Notifications">notifications</span>
+        <div class="avatar" title="Profile">U</div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <router-outlet />
+    </main>
+  </div>
+
+</div>
