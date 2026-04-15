@@ -11,7 +11,7 @@
   },
   "prettier": {
     "printWidth": 100,
-    "singleQuote": true,
+    "singleQuote": true, 
     "overrides": [
       {
         "files": "*.html",
