@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
@@ -19,8 +19,47 @@ interface NavGroup {
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.css'
 })
-export class LayoutComponent {
+export class LayoutComponent implements OnInit {
   sidebarCollapsed = signal(false);
+  isKosMode = false;
+
+  ngOnInit(): void {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('mode') === 'em') {
+      sessionStorage.setItem('emp_kos_mode', 'true');
+    }
+    this.isKosMode = sessionStorage.getItem('emp_kos_mode') === 'true';
+
+    if (this.isKosMode) {
+      try {
+        const raw = localStorage.getItem('kos_user');
+        if (raw) {
+          const u = JSON.parse(raw);
+          this.kosUserInitial = (u.name || u.username || u.email || 'U')[0].toUpperCase();
+          this.kosUserName = u.name || u.username || '';
+        }
+      } catch { /* ignore */ }
+    }
+  }
+
+  kosUserInitial = 'U';
+  kosUserName = '';
+
+  goBackToKos(): void {
+    if (window.opener && !window.opener.closed) {
+      window.opener.focus();
+      window.close();
+    } else {
+      window.location.href = window.location.origin.replace(':4201', ':4200');
+    }
+  }
+
+  logout(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('kos_user');
+    sessionStorage.removeItem('emp_kos_mode');
+    this.goBackToKos();
+  }
 
   navGroups: NavGroup[] = [
     {

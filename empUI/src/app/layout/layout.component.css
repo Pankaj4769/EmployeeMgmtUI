@@ -194,6 +194,123 @@
   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 
+/* KOS-branded topbar */
+.topbar--kos {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #1d4ed8 100%);
+  border-bottom: 1px solid rgba(59,130,246,0.35);
+  box-shadow: 0 1px 8px rgba(30,58,138,0.40);
+}
+
+.topbar--kos .topbar-menu-btn {
+  color: rgba(255,255,255,0.70);
+}
+
+.topbar--kos .topbar-menu-btn:hover {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+}
+
+.kos-brand {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.kos-badge {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 4px 8px;
+  border-radius: 5px;
+  border: 1px solid rgba(147,197,253,0.30);
+  box-shadow: 0 0 8px rgba(59,130,246,0.40);
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.kos-badge:hover {
+  background: linear-gradient(135deg, #60a5fa, #2563eb);
+  box-shadow: 0 0 14px rgba(59,130,246,0.60);
+}
+
+.kos-badge-icon {
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.kos-titles {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  overflow: hidden;
+}
+
+.kos-app-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.kos-sub {
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(147,197,253,0.75);
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.topbar-icon--kos {
+  color: rgba(255,255,255,0.65);
+}
+
+.topbar-icon--kos:hover {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+}
+
+.kos-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.80);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.kos-logout-btn:hover {
+  background: rgba(239,68,68,0.20);
+  border-color: rgba(239,68,68,0.40);
+  color: #fca5a5;
+}
+
+.kos-logout-btn .material-symbols-outlined {
+  font-size: 16px;
+}
+
+.kos-logout-label {
+  white-space: nowrap;
+}
+
+.kos-avatar {
+  background: rgba(59,130,246,0.55);
+  border: 1px solid rgba(147,197,253,0.40);
+}
+
 .topbar-menu-btn {
   display: none;
   background: none;

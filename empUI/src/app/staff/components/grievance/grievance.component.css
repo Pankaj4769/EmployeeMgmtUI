@@ -1,5 +1,4 @@
-:host { --primary:#16a34a; --primary-dark:#15803d; --bg:#f1f5f9; --card:#fff; --border:#e2e8f0; --text:#0f172a; --muted:#64748b; font-family:'Inter',system-ui,sans-serif; }
-  display: block;
+:host { --primary:#16a34a; --primary-dark:#15803d; --bg:#f1f5f9; --card:#fff; --border:#e2e8f0; --text:#0f172a; --muted:#64748b; font-family:'Inter',system-ui,sans-serif; display:block; }
 .gv-page { padding:24px; background:var(--bg); min-height:100vh; }
 .gv-header { display:flex; justify-content:space-between; align-items:center; background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px 24px; margin-bottom:24px; gap:16px; flex-wrap:wrap; box-shadow:0 1px 3px rgba(0,0,0,.04); }
 .gv-header-title h1 { margin:0 0 2px; font-size:22px; font-weight:700; }

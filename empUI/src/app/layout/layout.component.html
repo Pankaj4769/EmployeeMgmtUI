@@ -32,7 +32,33 @@
 
   <!-- Main content -->
   <div class="main-area">
-    <header class="topbar">
+    <!-- KOS-branded topbar (opened via KOS UI) -->
+    <header class="topbar topbar--kos" *ngIf="isKosMode">
+      <button class="topbar-menu-btn" (click)="toggleSidebar()">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+      <div class="kos-brand">
+        <button class="kos-badge" (click)="goBackToKos()" title="Back to KOS">
+          <span class="material-symbols-outlined kos-badge-icon">arrow_back</span>
+          T2K
+        </button>
+        <div class="kos-titles">
+          <span class="kos-app-name">Employee Management</span>
+          <span class="kos-sub">via Tech2Kitchen KOS</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <span class="material-symbols-outlined topbar-icon topbar-icon--kos" title="Notifications">notifications</span>
+        <button class="kos-logout-btn" (click)="logout()" title="Logout">
+          <span class="material-symbols-outlined">logout</span>
+          <span class="kos-logout-label">Logout</span>
+        </button>
+        <div class="avatar kos-avatar" [title]="kosUserName || 'Profile'">{{ kosUserInitial }}</div>
+      </div>
+    </header>
+
+    <!-- Default topbar -->
+    <header class="topbar" *ngIf="!isKosMode">
       <button class="topbar-menu-btn" (click)="toggleSidebar()">
         <span class="material-symbols-outlined">menu</span>
       </button>
